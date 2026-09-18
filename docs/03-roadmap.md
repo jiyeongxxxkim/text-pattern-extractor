@@ -22,6 +22,7 @@
 ## M5 — 배포 및 문서화
 - 산출물: GitHub Pages 배포, README, CHANGELOG v1.0.0
 - 완료 기준: 배포 URL 접속 가능, 최신 정답률이 README에 반영됨
+- **실행 결과 (2026-09-18)**: https://jiyeongxxxkim.github.io/text-pattern-extractor/ 배포 완료, 배포 URL에서 브라우저로 3개 기능(계좌/해시태그/날짜) 실동작 확인. README·CHANGELOG v1.0.0 작성 완료. 전 마일스톤(M1~M5) 종료
 
 ## 진행 순서
 ```
