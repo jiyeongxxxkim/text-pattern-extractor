@@ -64,4 +64,15 @@ describe('extractAccount', () => {
       account: '123456789012',
     });
   });
+
+  it('한 글자 오타가 섞인 은행명을 편집거리 1로 보정한다', () => {
+    expect(extractAccount('궁민은행 계좌 110123456789 예요')).toEqual({
+      bank: '국민은행',
+      account: '110123456789',
+    });
+    expect(extractAccount('신힌은행 1234567890 로 부탁드려요')).toEqual({
+      bank: '신한은행',
+      account: '1234567890',
+    });
+  });
 });
