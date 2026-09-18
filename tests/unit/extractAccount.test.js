@@ -75,4 +75,12 @@ describe('extractAccount', () => {
       account: '1234567890',
     });
   });
+
+  it('010 휴대폰번호뿐 아니라 지역번호·인터넷전화도 계좌로 오인하지 않는다', () => {
+    // 회귀 테스트: 기존엔 010-11자리만 제외해서 070/031/02/011은 계좌로 오인했음 (이슈 #13)
+    expect(extractAccount('070-1234-5678 로 연락주세요')).toEqual({ bank: null, account: null });
+    expect(extractAccount('031-123-4567 로 전화주세요')).toEqual({ bank: null, account: null });
+    expect(extractAccount('02-1234-5678 로 전화주세요')).toEqual({ bank: null, account: null });
+    expect(extractAccount('011-234-5678 로 연락주세요')).toEqual({ bank: null, account: null });
+  });
 });

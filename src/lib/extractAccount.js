@@ -1,3 +1,5 @@
+import { isPhoneNumber } from './phoneRules.js';
+
 const BANK_ALIASES = {
   국민은행: ['국민은행', '국민', 'kb국민', 'kb'],
   신한은행: ['신한은행', '신한'],
@@ -70,7 +72,7 @@ function extractAccountNumber(text) {
   const candidates = text.match(/\d[\d\-. ]{8,24}\d/g) || [];
   for (const candidate of candidates) {
     const digits = candidate.replace(/\D/g, '');
-    if (digits.length === 11 && digits.startsWith('010')) continue; // 휴대폰번호 제외
+    if (isPhoneNumber(digits)) continue; // 전화번호(휴대폰/지역번호) 제외
     if (digits.length >= 10 && digits.length <= 16) return digits;
   }
   return null;
