@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>비정형 텍스트 패턴 추출기</title>
+<style>
+  :root { color-scheme: light dark; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif;
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 24px 16px 64px;
+    line-height: 1.5;
+  }
+  h1 { font-size: 1.4rem; }
+  p.lead { color: #666; }
+  section {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 16px;
+    margin: 16px 0;
+  }
+  h2 { font-size: 1.1rem; margin-top: 0; }
+  textarea {
+    width: 100%;
+    box-sizing: border-box;
+    min-height: 60px;
+    font-size: 1rem;
+    padding: 8px;
+  }
+  button {
+    margin-top: 8px;
+    padding: 8px 16px;
+    cursor: pointer;
+  }
+  pre {
+    background: #f5f5f5;
+    padding: 8px;
+    border-radius: 4px;
+    white-space: pre-wrap;
+    word-break: break-all;
+    min-height: 1.2em;
+  }
+  footer { color: #888; font-size: 0.85rem; margin-top: 32px; }
+</style>
+</head>
+<body>
+  <h1>비정형 텍스트 패턴 추출기</h1>
+  <p class="lead">서버 없이 브라우저에서 정규식·문자열 알고리즘만으로 동작합니다.</p>
+
+  <section>
+    <h2>계좌번호 추출</h2>
+    <textarea id="account-input" placeholder="예: 국민은행 123-456-789012 로 보내주세요"></textarea>
+    <button id="account-btn">추출</button>
+    <pre id="account-result"></pre>
+  </section>
+
+  <section>
+    <h2>해시태그 생성</h2>
+    <textarea id="hashtag-input" placeholder="예: 오늘 날씨가 진짜 좋다 날씨 최고"></textarea>
+    <button id="hashtag-btn">생성</button>
+    <pre id="hashtag-result"></pre>
+  </section>
+
+  <section>
+    <h2>자연어 날짜 변환</h2>
+    <textarea id="date-input" placeholder="예: 다음 주 금요일 오후 3시"></textarea>
+    <button id="date-btn">변환</button>
+    <pre id="date-result"></pre>
+  </section>
+
+  <footer>
+    소스: <a href="https://github.com/jiyeongxxxkim/text-pattern-extractor">GitHub</a>
+  </footer>
+
+  <script type="module">
+    import { extractAccount } from './src/lib/extractAccount.js';
+    import { generateHashtags } from './src/lib/generateHashtags.js';
+    import { parseDate } from './src/lib/parseDate.js';
+
+    document.getElementById('account-btn').addEventListener('click', () => {
+      const result = extractAccount(document.getElementById('account-input').value);
+      document.getElementById('account-result').textContent = JSON.stringify(result, null, 2);
+    });
+
+    document.getElementById('hashtag-btn').addEventListener('click', () => {
+      const result = generateHashtags(document.getElementById('hashtag-input').value);
+      document.getElementById('hashtag-result').textContent = result.join(' ') || '(결과 없음)';
+    });
+
+    document.getElementById('date-btn').addEventListener('click', () => {
+      const result = parseDate(document.getElementById('date-input').value);
+      document.getElementById('date-result').textContent = result ?? '(인식 불가)';
+    });
+  </script>
+</body>
+</html>
