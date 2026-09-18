@@ -2,6 +2,11 @@
 
 형식은 [Keep a Changelog](https://keepachangelog.com/ko/1.0.0/)를 따른다.
 
+## [1.1.1] - 2026-09-18
+
+### Fixed
+- 계좌번호 추출기가 010 외 전화번호(070/031/02/011 등)를 계좌로 오인하던 버그 수정. 전화번호 판별 로직을 `phoneRules.js`로 공통화해 `extractAccount`/`extractPhone`이 같은 기준을 쓰도록 정리 (이슈 #13)
+
 ## [1.1.0] - 2026-09-18
 
 실사용자(인스타 공구 운영자) 배포 후 테스트 피드백 5건 반영 (`docs/06-user-feedback.md`).
