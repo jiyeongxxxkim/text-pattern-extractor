@@ -13,13 +13,15 @@ function mondayOf(date) {
 
 // ponytail: "금요일에 봐요"처럼 이번/다음 없이 단독으로 쓰인 요일은 미지원.
 // M4 AI QA 정답률에서 필요성이 확인되면 추가한다.
+const WEEKS_AHEAD = { 다다음: 2, 다음: 1, 이번: 0 };
+
 function resolveDate(text, baseDate) {
-  const weekMatch = text.match(/(다음|이번)\s*주\s*([일월화수목금토])(?:요일)?/);
+  // "다다음"을 "다음"보다 먼저 검사해야 함 — 정규식 자체는 위치상 문제 없지만 의도를 명확히 함
+  const weekMatch = text.match(/(다다음|다음|이번)\s*주\s*([일월화수목금토])(?:요일)?/);
   if (weekMatch) {
     const [, when, wd] = weekMatch;
     const monday = mondayOf(baseDate);
-    const weeksToAdd = when === '다음' ? 1 : 0;
-    monday.setDate(monday.getDate() + ISO_WEEKDAY[wd] + weeksToAdd * 7);
+    monday.setDate(monday.getDate() + ISO_WEEKDAY[wd] + WEEKS_AHEAD[when] * 7);
     return monday;
   }
 

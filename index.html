@@ -29,11 +29,17 @@
     font-size: 1rem;
     padding: 8px;
   }
-  button {
+  .btn-row {
+    display: flex;
+    gap: 8px;
     margin-top: 8px;
+    flex-wrap: wrap;
+  }
+  button {
     padding: 8px 16px;
     cursor: pointer;
   }
+  button.secondary { color: #666; }
   pre {
     background: #f5f5f5;
     padding: 8px;
@@ -41,7 +47,10 @@
     white-space: pre-wrap;
     word-break: break-all;
     min-height: 1.2em;
+    margin-top: 8px;
+    transition: background-color 0.3s;
   }
+  pre.flash { background-color: #dff0d8; }
   footer { color: #888; font-size: 0.85rem; margin-top: 32px; }
 </style>
 </head>
@@ -52,21 +61,44 @@
   <section>
     <h2>계좌번호 추출</h2>
     <textarea id="account-input" placeholder="예: 국민은행 123-456-789012 로 보내주세요"></textarea>
-    <button id="account-btn">추출</button>
+    <div class="btn-row">
+      <button id="account-btn">추출</button>
+      <button id="account-copy" class="secondary">복사</button>
+      <button id="account-clear" class="secondary">지우기</button>
+    </div>
     <pre id="account-result"></pre>
+  </section>
+
+  <section>
+    <h2>전화번호 추출</h2>
+    <textarea id="phone-input" placeholder="예: 연락처는 010.1234.5678 이에요"></textarea>
+    <div class="btn-row">
+      <button id="phone-btn">추출</button>
+      <button id="phone-copy" class="secondary">복사</button>
+      <button id="phone-clear" class="secondary">지우기</button>
+    </div>
+    <pre id="phone-result"></pre>
   </section>
 
   <section>
     <h2>해시태그 생성</h2>
     <textarea id="hashtag-input" placeholder="예: 오늘 날씨가 진짜 좋다 날씨 최고"></textarea>
-    <button id="hashtag-btn">생성</button>
+    <div class="btn-row">
+      <button id="hashtag-btn">생성</button>
+      <button id="hashtag-copy" class="secondary">복사</button>
+      <button id="hashtag-clear" class="secondary">지우기</button>
+    </div>
     <pre id="hashtag-result"></pre>
   </section>
 
   <section>
     <h2>자연어 날짜 변환</h2>
-    <textarea id="date-input" placeholder="예: 다음 주 금요일 오후 3시"></textarea>
-    <button id="date-btn">변환</button>
+    <textarea id="date-input" placeholder="예: 다다음 주 금요일 오후 3시"></textarea>
+    <div class="btn-row">
+      <button id="date-btn">변환</button>
+      <button id="date-copy" class="secondary">복사</button>
+      <button id="date-clear" class="secondary">지우기</button>
+    </div>
     <pre id="date-result"></pre>
   </section>
 
@@ -76,22 +108,64 @@
 
   <script type="module">
     import { extractAccount } from './src/lib/extractAccount.js';
+    import { extractPhone } from './src/lib/extractPhone.js';
     import { generateHashtags } from './src/lib/generateHashtags.js';
     import { parseDate } from './src/lib/parseDate.js';
 
-    document.getElementById('account-btn').addEventListener('click', () => {
-      const result = extractAccount(document.getElementById('account-input').value);
-      document.getElementById('account-result').textContent = JSON.stringify(result, null, 2);
-    });
+    function setupSection({ prefix, run, format }) {
+      const input = document.getElementById(`${prefix}-input`);
+      const result = document.getElementById(`${prefix}-result`);
+      const copyBtn = document.getElementById(`${prefix}-copy`);
 
-    document.getElementById('hashtag-btn').addEventListener('click', () => {
-      const result = generateHashtags(document.getElementById('hashtag-input').value);
-      document.getElementById('hashtag-result').textContent = result.join(' ') || '(결과 없음)';
-    });
+      document.getElementById(`${prefix}-btn`).addEventListener('click', () => {
+        result.textContent = format(run(input.value));
+        result.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        result.classList.remove('flash');
+        // eslint-disable-next-line no-unused-expressions
+        result.offsetHeight; // 리플로우 강제 — 연속 클릭 시에도 flash 애니메이션이 재시작되도록
+        result.classList.add('flash');
+      });
 
-    document.getElementById('date-btn').addEventListener('click', () => {
-      const result = parseDate(document.getElementById('date-input').value);
-      document.getElementById('date-result').textContent = result ?? '(인식 불가)';
+      document.getElementById(`${prefix}-clear`).addEventListener('click', () => {
+        input.value = '';
+        result.textContent = '';
+        result.classList.remove('flash');
+        input.focus();
+      });
+
+      copyBtn.addEventListener('click', async () => {
+        if (!result.textContent) return;
+        try {
+          await navigator.clipboard.writeText(result.textContent);
+          const original = copyBtn.textContent;
+          copyBtn.textContent = '복사됨!';
+          setTimeout(() => { copyBtn.textContent = original; }, 1200);
+        } catch {
+          copyBtn.textContent = '복사 실패';
+          setTimeout(() => { copyBtn.textContent = '복사'; }, 1200);
+        }
+      });
+    }
+
+    setupSection({
+      prefix: 'account',
+      run: extractAccount,
+      format: (r) => JSON.stringify(r, null, 2),
+    });
+    setupSection({
+      prefix: 'phone',
+      run: extractPhone,
+      format: (r) => r ?? '(인식 불가)',
+    });
+    setupSection({
+      prefix: 'hashtag',
+      run: generateHashtags,
+      format: (r) => r.join(' ') || '(결과 없음)',
+    });
+    setupSection({
+      prefix: 'date',
+      run: parseDate,
+      format: (r) => r ?? '(인식 불가)',
     });
   </script>
 </body>

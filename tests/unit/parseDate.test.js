@@ -36,4 +36,15 @@ describe('parseDate', () => {
   it('날짜/시간 정보가 없으면 null을 반환한다', () => {
     expect(parseDate('안녕하세요', BASE)).toBeNull();
   });
+
+  it('다다음 주 요일을 2주 뒤 기준으로 변환한다 (피드백 #5)', () => {
+    expect(parseDate('다다음주 목요일', BASE)).toBe('2026-10-01 00:00');
+    expect(parseDate('다다음주 목요일 오후 3시', BASE)).toBe('2026-10-01 15:00');
+  });
+
+  it('다다음/다음/이번 주가 각각 다른 주로 정확히 구분된다', () => {
+    expect(parseDate('이번 주 금요일', BASE)).toBe('2026-09-18 00:00');
+    expect(parseDate('다음 주 금요일', BASE)).toBe('2026-09-25 00:00');
+    expect(parseDate('다다음 주 금요일', BASE)).toBe('2026-10-02 00:00');
+  });
 });
