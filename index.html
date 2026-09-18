@@ -4,106 +4,312 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>비정형 텍스트 패턴 추출기</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;700;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
 <style>
-  :root { color-scheme: light dark; }
+  :root {
+    --bg: #dce8f1;
+    --card: #f7f2ea;
+    --card-border: #e2d9cb;
+    --ink: #4a1626;
+    --muted: #6b5b63;
+    --accent: #d9541f;
+    --accent-dark: #b8431a;
+    --result-bg: #fdeade;
+    color-scheme: light;
+  }
+  * { box-sizing: border-box; }
   body {
-    font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif;
-    max-width: 640px;
-    margin: 0 auto;
-    padding: 24px 16px 64px;
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif;
     line-height: 1.5;
+    overflow-x: hidden;
   }
-  h1 { font-size: 1.4rem; }
-  p.lead { color: #666; }
-  section {
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    padding: 16px;
-    margin: 16px 0;
+  .wrap { max-width: 980px; margin: 0 auto; padding: 0 20px; }
+  code, .mono { font-family: 'DM Mono', 'SFMono-Regular', Menlo, monospace; }
+
+  /* ---------- header ---------- */
+  header.site {
+    padding: 24px 0 16px;
+    border-bottom: 1px solid rgba(74, 22, 38, 0.15);
   }
-  h2 { font-size: 1.1rem; margin-top: 0; }
+  header.site .wrap { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+  .brand { font-size: 1.3rem; font-weight: 900; letter-spacing: -0.02em; }
+  .nav-tags { font-size: 0.75rem; letter-spacing: 0.12em; color: var(--muted); margin-left: 16px; }
+  .header-caption { font-size: 0.7rem; letter-spacing: 0.08em; color: var(--muted); text-align: right; line-height: 1.4; }
+
+  /* ---------- hero ---------- */
+  .hero { padding: 48px 0 40px; position: relative; overflow: hidden; }
+  .hero .wrap { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 32px; align-items: center; }
+  .eyebrow {
+    font-size: 0.75rem; font-weight: 700; letter-spacing: 0.14em; color: var(--accent);
+    display: flex; align-items: center; gap: 8px; margin-bottom: 12px;
+  }
+  .eyebrow::before { content: ''; width: 20px; height: 2px; background: var(--accent); display: inline-block; }
+  h1.headline { font-size: 2.1rem; font-weight: 900; letter-spacing: -0.02em; margin: 0 0 14px; line-height: 1.25; }
+  .hero p.lead { color: var(--muted); font-size: 0.95rem; max-width: 34ch; }
+
+  .hero-art { position: relative; min-height: 200px; }
+  .sample-card {
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: 10px;
+    padding: 18px 20px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--ink);
+    box-shadow: 0 12px 30px rgba(74, 22, 38, 0.12);
+  }
+  .sample-card div { padding: 3px 0; }
+  .sample-card .hl { background: rgba(217, 84, 31, 0.18); border-radius: 3px; padding: 1px 4px; }
+  .lens {
+    position: absolute;
+    top: -18px; right: -18px;
+    width: 92px; height: 92px;
+    border-radius: 50%;
+    border: 6px solid var(--ink);
+    background: rgba(255, 255, 255, 0.35);
+    box-shadow: 0 8px 20px rgba(74, 22, 38, 0.25);
+  }
+  .lens::after {
+    content: '';
+    position: absolute; bottom: -26px; right: -6px;
+    width: 8px; height: 34px;
+    background: var(--ink);
+    border-radius: 4px;
+    transform: rotate(45deg);
+  }
+  .find-mark {
+    position: absolute; bottom: -8px; right: 4px;
+    font-size: 1.6rem; font-weight: 900; color: var(--ink);
+    letter-spacing: -0.02em;
+  }
+
+  /* ---------- tool grid ---------- */
+  main { padding: 8px 0 48px; }
+  .tool-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  .tool-card {
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+  }
+  .tool-card .tool-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .tool-title { font-size: 1.05rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+  .tool-title .icon { font-size: 1rem; }
+  .tool-tag { font-size: 0.65rem; letter-spacing: 0.1em; color: var(--muted); text-align: right; white-space: nowrap; padding-top: 2px; }
+  .tool-desc { font-size: 0.82rem; color: var(--muted); margin: 4px 0 14px; }
+  hr.div { border: none; border-top: 1px solid var(--card-border); margin: 0 0 14px; }
+
   textarea {
     width: 100%;
     box-sizing: border-box;
-    min-height: 60px;
-    font-size: 1rem;
-    padding: 8px;
+    min-height: 64px;
+    font-size: 0.9rem;
+    font-family: inherit;
+    padding: 10px 12px;
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    background: #fff;
+    resize: vertical;
   }
-  .btn-row {
-    display: flex;
-    gap: 8px;
-    margin-top: 8px;
-    flex-wrap: wrap;
+  textarea:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+  .btn-row { display: flex; gap: 8px; margin-top: 10px; }
+  button { font-family: inherit; cursor: pointer; border: none; border-radius: 8px; font-size: 0.85rem; }
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+    font-weight: 700;
+    padding: 10px 18px;
+    flex: 1;
   }
-  button {
-    padding: 8px 16px;
-    cursor: pointer;
+  .btn-primary:hover { background: var(--accent-dark); }
+  .btn-secondary {
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid var(--card-border);
+    padding: 10px 14px;
   }
-  button.secondary { color: #666; }
-  pre {
-    background: #f5f5f5;
-    padding: 8px;
-    border-radius: 4px;
-    white-space: pre-wrap;
+  .btn-secondary:hover { border-color: var(--muted); }
+
+  .result-box { margin-top: 14px; }
+  .result-label { font-size: 0.7rem; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 6px; display: flex; justify-content: space-between; }
+  .copy-inline {
+    background: none; border: none; color: var(--muted); font-size: 0.7rem; cursor: pointer; padding: 0;
+    text-decoration: underline; text-underline-offset: 2px;
+  }
+  .copy-inline:hover { color: var(--ink); }
+  .result-value {
+    background: var(--result-bg);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.88rem;
+    min-height: 1.3em;
     word-break: break-all;
-    min-height: 1.2em;
-    margin-top: 8px;
-    transition: background-color 0.3s;
+    transition: box-shadow 0.25s;
   }
-  pre.flash { background-color: #dff0d8; }
-  footer { color: #888; font-size: 0.85rem; margin-top: 32px; }
+  .result-value.flash { box-shadow: 0 0 0 2px var(--accent) inset; }
+  .result-value.empty {
+    background: rgba(74, 22, 38, 0.05);
+    color: var(--muted);
+    font-family: inherit;
+    font-size: 0.82rem;
+  }
+  .chip {
+    display: inline-block;
+    background: #fff;
+    border: 1px solid var(--card-border);
+    border-radius: 999px;
+    padding: 2px 10px;
+    margin: 2px 4px 2px 0;
+    font-size: 0.82rem;
+  }
+
+  /* ---------- footer ---------- */
+  footer.site {
+    border-top: 1px solid rgba(74, 22, 38, 0.15);
+    padding: 20px 0 36px;
+  }
+  footer.site .wrap { display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; color: var(--muted); flex-wrap: wrap; gap: 8px; }
+  footer.site a { color: var(--ink); }
+
+  @media (max-width: 720px) {
+    .tool-grid { grid-template-columns: 1fr; }
+    .hero .wrap { grid-template-columns: 1fr; }
+    .hero-art { display: none; }
+    h1.headline { font-size: 1.6rem; }
+    .nav-tags { display: none; }
+  }
 </style>
 </head>
 <body>
-  <h1>비정형 텍스트 패턴 추출기</h1>
-  <p class="lead">서버 없이 브라우저에서 정규식·문자열 알고리즘만으로 동작합니다.</p>
-
-  <section>
-    <h2>계좌번호 추출</h2>
-    <textarea id="account-input" placeholder="예: 국민은행 123-456-789012 로 보내주세요"></textarea>
-    <div class="btn-row">
-      <button id="account-btn">추출</button>
-      <button id="account-copy" class="secondary">복사</button>
-      <button id="account-clear" class="secondary">지우기</button>
+  <header class="site">
+    <div class="wrap">
+      <div style="display:flex; align-items:baseline;">
+        <span class="brand">TextFinder</span>
+        <span class="nav-tags">EXTRACT&nbsp;/&nbsp;FIND&nbsp;/&nbsp;CONVERT</span>
+      </div>
+      <div class="header-caption">SIMPLE TOOLS<br />FOR YOUR TEXT</div>
     </div>
-    <pre id="account-result"></pre>
+  </header>
+
+  <section class="hero">
+    <div class="wrap">
+      <div>
+        <div class="eyebrow">TEXT TOOLS</div>
+        <h1 class="headline">텍스트 속 숨은 정보를<br />찾아드립니다.</h1>
+        <p class="lead">복잡한 텍스트 속에서 계좌번호·전화번호·해시태그·날짜를 서버 없이, 브라우저에서 바로 추출하세요.</p>
+      </div>
+      <div class="hero-art">
+        <div class="sample-card">
+          <div>계좌번호 <span class="hl">123-456-789012</span></div>
+          <div>연락처 <span class="hl">010.1234.5678</span></div>
+          <div>#프로젝트 #디자인</div>
+          <div>다음 금요일 오후 3시</div>
+        </div>
+        <div class="lens"></div>
+        <div class="find-mark">FIND</div>
+      </div>
+    </div>
   </section>
 
-  <section>
-    <h2>전화번호 추출</h2>
-    <textarea id="phone-input" placeholder="예: 연락처는 010.1234.5678 이에요"></textarea>
-    <div class="btn-row">
-      <button id="phone-btn">추출</button>
-      <button id="phone-copy" class="secondary">복사</button>
-      <button id="phone-clear" class="secondary">지우기</button>
-    </div>
-    <pre id="phone-result"></pre>
-  </section>
+  <main class="wrap">
+    <div class="tool-grid">
+      <div class="tool-card">
+        <div class="tool-head">
+          <div class="tool-title"><span class="icon">🔍</span>계좌번호 추출</div>
+          <div class="tool-tag">ACCOUNT<br />EXTRACTOR</div>
+        </div>
+        <p class="tool-desc">텍스트에서 은행명과 계좌번호를 찾아 추출합니다.</p>
+        <hr class="div" />
+        <textarea id="account-input" placeholder="예: 국민은행 123-456-789012 로 보내주세요"></textarea>
+        <div class="btn-row">
+          <button id="account-btn" class="btn-primary">추출하기 →</button>
+          <button id="account-clear" class="btn-secondary">지우기</button>
+        </div>
+        <div class="result-box">
+          <div class="result-label"><span>추출 결과</span><button id="account-copy" class="copy-inline">복사</button></div>
+          <div id="account-result" class="result-value empty">-</div>
+        </div>
+      </div>
 
-  <section>
-    <h2>해시태그 생성</h2>
-    <textarea id="hashtag-input" placeholder="예: 오늘 날씨가 진짜 좋다 날씨 최고"></textarea>
-    <div class="btn-row">
-      <button id="hashtag-btn">생성</button>
-      <button id="hashtag-copy" class="secondary">복사</button>
-      <button id="hashtag-clear" class="secondary">지우기</button>
-    </div>
-    <pre id="hashtag-result"></pre>
-  </section>
+      <div class="tool-card">
+        <div class="tool-head">
+          <div class="tool-title"><span class="icon">🔍</span>전화번호 추출</div>
+          <div class="tool-tag">PHONE<br />EXTRACTOR</div>
+        </div>
+        <p class="tool-desc">텍스트에서 전화번호를 찾아 추출합니다.</p>
+        <hr class="div" />
+        <textarea id="phone-input" placeholder="예: 연락처는 010.1234.5678 이에요"></textarea>
+        <div class="btn-row">
+          <button id="phone-btn" class="btn-primary">추출하기 →</button>
+          <button id="phone-clear" class="btn-secondary">지우기</button>
+        </div>
+        <div class="result-box">
+          <div class="result-label"><span>추출 결과</span><button id="phone-copy" class="copy-inline">복사</button></div>
+          <div id="phone-result" class="result-value empty">-</div>
+        </div>
+      </div>
 
-  <section>
-    <h2>자연어 날짜 변환</h2>
-    <textarea id="date-input" placeholder="예: 다다음 주 금요일 오후 3시"></textarea>
-    <div class="btn-row">
-      <button id="date-btn">변환</button>
-      <button id="date-copy" class="secondary">복사</button>
-      <button id="date-clear" class="secondary">지우기</button>
-    </div>
-    <pre id="date-result"></pre>
-  </section>
+      <div class="tool-card">
+        <div class="tool-head">
+          <div class="tool-title"><span class="icon">🔍</span>해시태그 생성</div>
+          <div class="tool-tag">HASHTAG<br />GENERATOR</div>
+        </div>
+        <p class="tool-desc">텍스트에서 관련 해시태그를 생성합니다.</p>
+        <hr class="div" />
+        <textarea id="hashtag-input" placeholder="예: 오늘 날씨가 진짜 좋다 날씨 최고"></textarea>
+        <div class="btn-row">
+          <button id="hashtag-btn" class="btn-primary">생성하기 →</button>
+          <button id="hashtag-clear" class="btn-secondary">지우기</button>
+        </div>
+        <div class="result-box">
+          <div class="result-label"><span>생성 결과</span><button id="hashtag-copy" class="copy-inline">복사</button></div>
+          <div id="hashtag-result" class="result-value empty">-</div>
+        </div>
+      </div>
 
-  <footer>
-    소스: <a href="https://github.com/jiyeongxxxkim/text-pattern-extractor">GitHub</a>
+      <div class="tool-card">
+        <div class="tool-head">
+          <div class="tool-title"><span class="icon">🔍</span>자연어 날짜 변환</div>
+          <div class="tool-tag">DATE<br />CONVERTER</div>
+        </div>
+        <p class="tool-desc">자연어로 된 날짜를 정확한 날짜 형식으로 변환합니다.</p>
+        <hr class="div" />
+        <textarea id="date-input" placeholder="예: 다다음 주 금요일 오후 3시"></textarea>
+        <div class="btn-row">
+          <button id="date-btn" class="btn-primary">변환하기 →</button>
+          <button id="date-clear" class="btn-secondary">지우기</button>
+        </div>
+        <div class="result-box">
+          <div class="result-label"><span>변환 결과</span><button id="date-copy" class="copy-inline">복사</button></div>
+          <div id="date-result" class="result-value empty">-</div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site">
+    <div class="wrap">
+      <span>TextFinder · <a href="https://github.com/jiyeongxxxkim/text-pattern-extractor">GitHub</a></span>
+      <span>FIND WHAT MATTERS →</span>
+    </div>
   </footer>
 
   <script type="module">
@@ -112,31 +318,58 @@
     import { generateHashtags } from './src/lib/generateHashtags.js';
     import { parseDate } from './src/lib/parseDate.js';
 
-    function setupSection({ prefix, run, format }) {
+    function formatAccount(r) {
+      return [r.bank, r.account].filter(Boolean).join(' · ');
+    }
+
+    function renderPlain(el, text) {
+      el.textContent = text || '(인식 불가)';
+      el.classList.toggle('empty', !text);
+    }
+
+    function renderChips(el, tags) {
+      el.innerHTML = '';
+      el.classList.toggle('empty', tags.length === 0);
+      if (tags.length === 0) {
+        el.textContent = '(결과 없음)';
+        return;
+      }
+      for (const tag of tags) {
+        const chip = document.createElement('span');
+        chip.className = 'chip';
+        chip.textContent = tag;
+        el.appendChild(chip);
+      }
+    }
+
+    function setupSection({ prefix, run, render, toText }) {
       const input = document.getElementById(`${prefix}-input`);
       const result = document.getElementById(`${prefix}-result`);
       const copyBtn = document.getElementById(`${prefix}-copy`);
+      let lastText = '';
 
       document.getElementById(`${prefix}-btn`).addEventListener('click', () => {
-        result.textContent = format(run(input.value));
+        const value = run(input.value);
+        lastText = toText(value);
+        render(result, value);
         result.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         result.classList.remove('flash');
-        // eslint-disable-next-line no-unused-expressions
-        result.offsetHeight; // 리플로우 강제 — 연속 클릭 시에도 flash 애니메이션이 재시작되도록
+        void result.offsetHeight; // 리플로우 강제 — 연속 클릭 시에도 flash가 재시작되도록
         result.classList.add('flash');
       });
 
       document.getElementById(`${prefix}-clear`).addEventListener('click', () => {
         input.value = '';
-        result.textContent = '';
+        lastText = '';
+        render(result, run(''));
         result.classList.remove('flash');
         input.focus();
       });
 
       copyBtn.addEventListener('click', async () => {
-        if (!result.textContent) return;
+        if (!lastText) return;
         try {
-          await navigator.clipboard.writeText(result.textContent);
+          await navigator.clipboard.writeText(lastText);
           const original = copyBtn.textContent;
           copyBtn.textContent = '복사됨!';
           setTimeout(() => { copyBtn.textContent = original; }, 1200);
@@ -150,22 +383,26 @@
     setupSection({
       prefix: 'account',
       run: extractAccount,
-      format: (r) => JSON.stringify(r, null, 2),
+      render: (el, r) => renderPlain(el, formatAccount(r)),
+      toText: formatAccount,
     });
     setupSection({
       prefix: 'phone',
       run: extractPhone,
-      format: (r) => r ?? '(인식 불가)',
+      render: (el, r) => renderPlain(el, r),
+      toText: (r) => r || '',
     });
     setupSection({
       prefix: 'hashtag',
       run: generateHashtags,
-      format: (r) => r.join(' ') || '(결과 없음)',
+      render: renderChips,
+      toText: (r) => r.join(' '),
     });
     setupSection({
       prefix: 'date',
       run: parseDate,
-      format: (r) => r ?? '(인식 불가)',
+      render: (el, r) => renderPlain(el, r),
+      toText: (r) => r || '',
     });
   </script>
 </body>
